@@ -21,13 +21,6 @@ The core objective of this project is to:
 - Train and test it on the MNIST dataset.
 - Evaluate performance using standard classification metrics.
 
-## ✅ Project Objectives
-
-1. **Data Preparation:** Load and preprocess the MNIST dataset.
-2. **Model Implementation:** Develop the LeNet-5 architecture in Python using PyTorch.
-3. **Model Training:** Train the neural network with MNIST images.
-4. **Evaluation:** Evaluate the model using accuracy, loss, and prediction visuals.
-
 ---
 
 ## 🛠️ Tools & Technologies
@@ -53,7 +46,6 @@ The system comprises six major steps:
 5. Model Evaluation
 6. Visualization of Results
 
-Each step is modular and follows a structured pipeline for seamless integration.
 
 ---
 
@@ -66,8 +58,3 @@ Each step is modular and follows a structured pipeline for seamless integration.
 - [NumPy](https://numpy.org/)
 - [Matplotlib](https://matplotlib.org/)
 
----
-
-## 🔗 Portfolio
-
-Explore more of my work at: [Eshan Shah Portfolio](https://portfolio-eshan-shahs-projects.vercel.app/)
