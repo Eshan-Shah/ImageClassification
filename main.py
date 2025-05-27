@@ -34,13 +34,14 @@ class LeNet5(nn.Module):
         self.fc3 = nn.Linear(84, 10)
 
     def forward(self, x):
-        x = self.pool(torch.tanh(self.conv1(x)))
-        x = self.pool(torch.tanh(self.conv2(x)))
-        x = x.view(-1, 16 * 5 * 5)
-        x = torch.tanh(self.fc1(x))
-        x = torch.tanh(self.fc2(x))
-        x = self.fc3(x)
+        x = self.pool(torch.tanh(self.conv1(x)))  # (64, 1, 32, 32) -> (64, 6, 28, 28) -> (64, 6, 14, 14)
+        x = self.pool(torch.tanh(self.conv2(x)))  # (64, 6, 14, 14) -> (64, 16, 10, 10) -> (64, 16, 5, 5)
+        x = x.view(-1, 16 * 5 * 5)                # (64, 16, 5, 5) -> (64, 400)
+        x = torch.tanh(self.fc1(x))               # (64, 400) -> (64, 120)
+        x = torch.tanh(self.fc2(x))               # (64, 120) -> (64, 84)
+        x = self.fc3(x)                           # (64, 84) -> (64, 10)
         return x
+    
 
 model = LeNet5().to(device)
 
