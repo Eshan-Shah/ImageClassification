@@ -1,6 +1,6 @@
-# Image Classification using LeNet-5 on MNIST
+# 🧠 Image Classification using CNNs: LeNet-5, VGG, and ResNet-50 on MNIST
 
-This project involves developing an image classification model capable of recognizing handwritten digits using the LeNet-5 convolutional neural network (CNN) architecture. The model is trained on the MNIST dataset as part of an internship under the supervision of Prof. Huiyu Zhou at the University of Leicester.
+This project focuses on developing and comparing multiple convolutional neural network (CNN) architectures; LeNet-5, VGG, and ResNet-50 for handwritten digit recognition using the MNIST dataset. The work was conducted as part of an internship under the supervision of Prof. Huiyu Zhou at the University of Leicester.
 
 ## 📅 Project Duration
 
@@ -14,12 +14,18 @@ Supervisors: [Prof. Huiyu Zhou](https://le.ac.uk/people/huiyu-zhou), [Yihang Zhu
 
 ---
 
-## 📌 Project Goals
+## 🏗️ Implemented Models
 
-The core objective of this project is to:
-- Build a functional LeNet-5 CNN model.
-- Train and test it on the MNIST dataset.
-- Evaluate performance using standard classification metrics.
+- **LeNet-5**  
+  A pioneering CNN architecture designed for digit recognition. Serves as a baseline model for the project.
+
+- **VGG**  
+  A deeper architecture with multiple convolutional layers stacked sequentially, known for its simplicity and strong performance.
+
+- **ResNet-50**  
+  A highly sophisticated CNN using residual learning to enable training of very deep networks without vanishing gradients.
+
+Each model was trained and evaluated on the MNIST dataset using standardized metrics such as accuracy and loss curves.
 
 ---
 
@@ -36,25 +42,13 @@ The core objective of this project is to:
 
 ---
 
-## 🧠 System Design
-
-The system comprises six major steps:
-1. Dataset Loading
-2. Data Preprocessing
-3. Model Design (LeNet-5)
-4. Model Training
-5. Model Evaluation
-6. Visualization of Results
-
-
----
-
 ## 📚 References
 
-- [MNIST Dataset](https://www.kaggle.com/datasets/hojjatk/mnist-dataset)
-- [LeNet-5 Architecture](https://en.wikipedia.org/wiki/LeNet)
-- [PyTorch Documentation](https://pytorch.org/)
-- [TorchVision Docs](https://pytorch.org/vision/stable/index.html)
-- [NumPy](https://numpy.org/)
+- [MNIST Dataset](https://www.kaggle.com/datasets/hojjatk/mnist-dataset)  
+- [LeNet-5 Architecture](https://en.wikipedia.org/wiki/LeNet)  
+- [VGG Paper](https://arxiv.org/abs/1409.1556)  
+- [ResNet Paper](https://arxiv.org/abs/1512.03385)  
+- [PyTorch Documentation](https://pytorch.org/)  
+- [TorchVision Docs](https://pytorch.org/vision/stable/index.html)  
+- [NumPy](https://numpy.org/)  
 - [Matplotlib](https://matplotlib.org/)
-
