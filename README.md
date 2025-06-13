@@ -1,4 +1,4 @@
-# 🧠 Image Classification using CNNs: LeNet-5, VGG, and ResNet-50 on MNIST
+# 🧠 Image Classification using multiple CNN architectures
 
 This project focuses on developing and comparing multiple convolutional neural network (CNN) architectures; LeNet-5, VGG, and ResNet-50 for handwritten digit recognition using the MNIST dataset. The work was conducted as part of an internship under the supervision of Prof. Huiyu Zhou at the University of Leicester.
 
