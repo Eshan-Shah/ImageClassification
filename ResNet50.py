@@ -8,79 +8,84 @@ import matplotlib.pyplot as plt
 import pickle
 import os
 
-# Device setup
+# Device setup: use GPU if available, else CPU
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
-# Data transforms
+# Data transforms for MNIST (ResNet expects 3-channel, 64x64 images)
 transform = transforms.Compose([
-    transforms.Resize((64, 64)),
-    transforms.Grayscale(num_output_channels=3),
-    transforms.ToTensor(),
-    transforms.Normalize((0.5,), (0.5,))
+    transforms.Resize((64, 64)),                         # Resize from 28x28 to 64x64
+    transforms.Grayscale(num_output_channels=3),         # Convert grayscale to 3-channel image
+    transforms.ToTensor(),                               # Convert image to tensor
+    transforms.Normalize((0.5,), (0.5,))                 # Normalize pixel values
 ])
 
-# Load MNIST
+# Load MNIST training and testing datasets
 train_dataset = torchvision.datasets.MNIST(root='./data', train=True, transform=transform, download=True)
 test_dataset = torchvision.datasets.MNIST(root='./data', train=False, transform=transform, download=True)
 
+# Create data loaders to load data in batches
 train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=16, shuffle=True)
 test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=100, shuffle=False)
 
-# Load ResNet-50
+# Load pretrained ResNet-50 model
 model = resnet50(weights=ResNet50_Weights.DEFAULT)
+
+# Freeze all layers so their weights won't be updated during training
 for param in model.parameters():
-    param.requires_grad = False  # freeze all layers
+    param.requires_grad = False
 
-# Replace final layer
+# Replace the final fully connected (fc) layer to match 10 MNIST classes
 model.fc = nn.Linear(model.fc.in_features, 10)
-model.fc.requires_grad = True
-model = model.to(device)
+model.fc.requires_grad = True  # Ensure the new layer is trainable
+model = model.to(device)       # Move model to selected device
 
-# Loss and optimizer
+# Define loss function and optimizer (only training the new fc layer)
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.fc.parameters(), lr=0.001)
 
-# Training
+# Training loop setup
 epochs = 10
-step_losses = []
-epoch_losses = []
-test_accuracies = []
+step_losses = []        # Stores loss after every training step
+epoch_losses = []       # Stores average loss per epoch
+test_accuracies = []    # Stores test accuracy after each epoch
 
 print("Starting training...")
 for epoch in range(epochs):
-    model.train()
+    model.train()       # Set model to training mode
     running_loss = 0.0
     print(f"\nEpoch {epoch + 1}/{epochs}")
 
     for i, (images, labels) in enumerate(train_loader):
         images, labels = images.to(device), labels.to(device)
 
-        optimizer.zero_grad()
-        outputs = model(images)
-        loss = criterion(outputs, labels)
-        loss.backward()
-        optimizer.step()
+        optimizer.zero_grad()          # Clear gradients
+        outputs = model(images)        # Forward pass
+        loss = criterion(outputs, labels)  # Compute loss
+        loss.backward()                # Backward pass
+        optimizer.step()               # Update only the fc layer
 
         loss_val = loss.item()
         running_loss += loss_val
         step_losses.append(loss_val)
 
+        # Optional: print progress every 100 steps
         if i % 100 == 0:
             print(f"  Step {i}/{len(train_loader)} - Loss: {loss_val:.4f}")
 
+    # Compute average loss for the entire epoch
     avg_epoch_loss = running_loss / len(train_loader)
     epoch_losses.append(avg_epoch_loss)
 
-    # Evaluate on test set
-    model.eval()
+    # Evaluation on the test set
+    model.eval()   # Set model to evaluation mode
     correct = 0
     total = 0
-    with torch.no_grad():
+    with torch.no_grad():  # Disable gradient tracking for inference
         for images, labels in test_loader:
             images, labels = images.to(device), labels.to(device)
             outputs = model(images)
-            _, predicted = torch.max(outputs, 1)
+            _, predicted = torch.max(outputs, 1)  # Get predicted class
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
 
@@ -88,11 +93,11 @@ for epoch in range(epochs):
     test_accuracies.append(accuracy)
     print(f"Epoch {epoch + 1} finished. Avg Loss: {avg_epoch_loss:.4f}, Test Accuracy: {accuracy:.2f}%")
 
-# Save model
+# Save trained model weights to file
 torch.save(model.state_dict(), "resnet50_mnist.pth")
 print("Model saved to resnet50_mnist.pth")
 
-# Save metrics to .pkl
+# Save training metrics for later analysis
 with open("metrics.pkl", "wb") as f:
     pickle.dump({
         "step_losses": step_losses,
