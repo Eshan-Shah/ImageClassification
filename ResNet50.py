@@ -35,12 +35,12 @@ model = resnet50(weights=ResNet50_Weights.DEFAULT)
 for param in model.parameters():
     param.requires_grad = False
 
-# Replace the final fully connected (fc) layer to match 10 MNIST classes
+# Replace the layer to match 10 MNIST classes
 model.fc = nn.Linear(model.fc.in_features, 10)
 model.fc.requires_grad = True  # Ensure the new layer is trainable
 model = model.to(device)       # Move model to selected device
 
-# Define loss function and optimizer (only training the new fc layer)
+# Define loss function and optimizer 
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.fc.parameters(), lr=0.001)
 
