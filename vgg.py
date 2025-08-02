@@ -8,38 +8,42 @@ import matplotlib.pyplot as plt
 import json
 import os
 
-# Device setup
+# Device setup: use GPU if available, else CPU
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
-# Transform MNIST to match VGG input
+# Transform MNIST images to fit VGG input requirements
 transform = transforms.Compose([
-    transforms.Resize((224, 224)),  # VGG expects 224x224
-    transforms.Grayscale(num_output_channels=3),  # Make it 3-channel
-    transforms.ToTensor(),
-    transforms.Normalize((0.5,), (0.5,))
+    transforms.Resize((224, 224)),                       # Resize to 224x224 as expected by VGG
+    transforms.Grayscale(num_output_channels=3),         # Convert single-channel (grayscale) to 3 channels
+    transforms.ToTensor(),                               # Convert to tensor
+    transforms.Normalize((0.5,), (0.5,))                 # Normalize pixel values
 ])
 
-# Load datasets
+# Load MNIST training and test datasets
 train_dataset = torchvision.datasets.MNIST(root='./data', train=True, transform=transform, download=True)
 test_dataset = torchvision.datasets.MNIST(root='./data', train=False, transform=transform, download=True)
+
+# Create data loaders for training and testing
 train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=16, shuffle=True)
 test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=100, shuffle=False)
 
-# Load pre-trained VGG-16
+# Load the pretrained VGG-16 model
 model = vgg16(weights=VGG16_Weights.DEFAULT)
+
+# Freeze all pretrained layers to avoid updating them
 for param in model.parameters():
-    param.requires_grad = False  # Freeze backbone
+    param.requires_grad = False
 
-# Replace classifier
-model.classifier[6] = nn.Linear(model.classifier[6].in_features, 10)  # 10 MNIST classes
-model = model.to(device)
+# Replace the final classification layer with a new one for 10 MNIST classes
+model.classifier[6] = nn.Linear(model.classifier[6].in_features, 10)
+model = model.to(device)  # Move model to the selected device
 
-# Loss and optimizer
+# Set loss function and optimizer (only training the new classifier layer)
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.classifier[6].parameters(), lr=0.001)
 
-# Tracking
+# Initialize tracking variables for loss and accuracy
 train_losses = []
 test_accuracies = []
 step_losses = []
@@ -48,36 +52,39 @@ epochs = 10
 
 # Training loop
 for epoch in range(epochs):
-    model.train()
+    model.train()  # Set model to training mode
     running_loss = 0.0
     print(f"Epoch {epoch+1}/{epochs} started.")
+
     for i, (images, labels) in enumerate(train_loader):
         images, labels = images.to(device), labels.to(device)
 
-        optimizer.zero_grad()
-        outputs = model(images)
-        loss = criterion(outputs, labels)
-        loss.backward()
-        optimizer.step()
+        optimizer.zero_grad()         # Clear gradients
+        outputs = model(images)       # Forward pass
+        loss = criterion(outputs, labels)  # Compute loss
+        loss.backward()              # Backpropagation
+        optimizer.step()             # Update weights (only classifier)
 
         running_loss += loss.item()
         step_losses.append(loss.item())
         steps += 1
 
+        # Print loss every 100 steps
         if i % 100 == 0:
             print(f"Step {i}/{len(train_loader)}, Loss: {loss.item():.4f}")
 
+    # Store average training loss for the epoch
     train_losses.append(running_loss / len(train_loader))
 
-    # Evaluation
-    model.eval()
+    # Evaluate model on test set
+    model.eval()  # Set model to evaluation mode
     correct = 0
     total = 0
-    with torch.no_grad():
+    with torch.no_grad():  # Disable gradient computation during testing
         for images, labels in test_loader:
             images, labels = images.to(device), labels.to(device)
             outputs = model(images)
-            _, predicted = torch.max(outputs.data, 1)
+            _, predicted = torch.max(outputs.data, 1)  # Get predicted class
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
 
@@ -85,11 +92,11 @@ for epoch in range(epochs):
     test_accuracies.append(accuracy)
     print(f"Epoch {epoch+1} complete. Avg Loss: {running_loss / len(train_loader):.4f}, Accuracy: {accuracy:.2f}%")
 
-# Save model
+# Save trained model weights
 torch.save(model.state_dict(), "vgg16_mnist.pth")
 print("Model saved to vgg16_mnist.pth")
 
-# Save metrics
+# Save training metrics to a JSON file
 with open("vgg16_training_stats.json", "w") as f:
     json.dump({
         "train_losses": train_losses,
